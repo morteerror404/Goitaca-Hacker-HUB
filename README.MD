@@ -1,5 +1,3 @@
-Aqui está a versão final com o tom agressivo e humor ácido que você pediu, mantendo o conteúdo técnico e a identidade indígena brasileira:
-
 ### **GOITACÁ HACKER-HUB: O PESADELO DOS RADIOAMADORES**  
 *(Flipper Zero? Brinquedo de playboy. HackRF? Sucata superfaturada. Nós somos o cacique do espectro!)*  
 
