@@ -1,0 +1,17 @@
+graph TD
+    CC1101 -->|SPI| MCU
+    CC1101 --> XTAL["X1: 26MHz (ECS-26.0MX)"]
+    XTAL --> C5["C5: 12pF (Kemet C0402C120J5GACTU)"]
+    XTAL --> C6["C6: 12pF (Kemet C0402C120J5GACTU)"]
+    C5 --> GND
+    C6 --> GND
+    
+    CC1101 --> RF_OUT["RF_N/RF_P"]
+    RF_OUT --> BALUN["T1: BAL-NRF02D3 (ST)"]
+    BALUN --> ANT["Antena PCB (λ/4 monopolo)"]
+    
+    CC1101 --> VCC["VCC (3.3V)"]
+    VCC --> C7["C7: 100nF (Murata GRM155R71C104KA88)"]
+    VCC --> C8["C8: 10µF (TDK C1608X5R0J106K)"]
+    C7 --> GND
+    C8 --> GND

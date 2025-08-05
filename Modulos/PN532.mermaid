@@ -1,0 +1,15 @@
+graph TD
+    PN532 -->|SPI| MCU
+    PN532 -->|I2C| MCU
+    PN532 -->|UART| MCU
+    
+    PN532 --> ANT["Antena PCB (13.56MHz)"]
+    ANT --> L1["L1: 1.5µH (Murata LQG18HN1R5S00)"]
+    ANT --> C1["C1: 27pF (Murata GRM1555C1H270JA01)"]
+    ANT --> C2["C2: 27pF (Murata GRM1555C1H270JA01)"]
+    
+    PN532 --> VDDP["VDD (3.3V)"]
+    VDDP --> C3["C3: 100nF (TDK C1005X5R1A104K)"]
+    VDDP --> C4["C4: 10µF (TDK C1608X5R0J106K)"]
+    C3 --> GND
+    C4 --> GND

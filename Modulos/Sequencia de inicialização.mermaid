@@ -1,0 +1,8 @@
+sequenceDiagram
+    RP2040->>CC1101: POWER_ON
+    RP2040->>PN532: RESET
+    RP2040->>AT86RF215: CONFIG_PLL
+    RP2040->>LMS6002D: INIT_SDR
+    RP2040->>ESP32: SYNC_CONFIG
+    Note right of RP2040: Ordem crítica para evitar<br/>interferência RF cruzada
+    RP2040-->>RP2040: DELAY 100ms

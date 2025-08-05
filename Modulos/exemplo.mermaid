@@ -1,0 +1,64 @@
+graph TD
+    %% ================ SEÇÃO DE ALIMENTAÇÃO ================
+    subgraph "ALIMENTAÇÃO (Específica por Módulo)"
+        USB["Micro USB 5V (CP2102)"] --> TP4056["Carregador TP4056"]
+        TP4056 --> Bateria["Bateria LiPo 3.7V"]
+        Bateria --> AMS1117_3V3["AMS1117-3.3V (Lógica)"]
+        Bateria --> LDO_RF["RT9193-3.3V (RF)"]
+        Bateria --> LDO_SDR["RT9193-3.3V (SDR)"]
+    end
+
+    %% ================ MÓDULO CENTRAL ================
+    subgraph "RP2040 (Controle Principal)"
+        RP2040 -->|GPIO0| CS_CC1101
+        RP2040 -->|GPIO1| CS_PN532
+        RP2040 -->|GPIO2| CS_AT86RF215
+        RP2040 -->|GPIO3| CS_LMS6002D
+        RP2040 -->|SPI0| MOSI
+        RP2040 -->|SPI0| MISO
+        RP2040 -->|SPI0| SCK
+    end
+
+    %% ================ CONEXÕES SPI ================
+    MOSI --> CC1101["CC1101 (GPIO18)"]
+    MOSI --> PN532["PN532 (MOSI)"]
+    MOSI --> AT86RF215["AT86RF215 (MOSI)"]
+    MOSI --> LMS6002D["LMS6002D (SDI)"]
+
+    MISO --> CC1101["CC1101 (GPIO16)"]
+    MISO --> PN532["PN532 (MISO)"]
+    MISO --> AT86RF215["AT86RF215 (MISO)"]
+    MISO --> LMS6002D["LMS6002D (SDO)"]
+
+    SCK --> CC1101["CC1101 (GPIO17)"]
+    SCK --> PN532["PN532 (SCK)"]
+    SCK --> AT86RF215["AT86RF215 (SCLK)"]
+    SCK --> LMS6002D["LMS6002D (SCK)"]
+
+    %% ================ CONEXÕES ESP32 ================
+    subgraph "ESP32-S3 (Comunicação)"
+        ESP32 -->|GPIO4| IR_TX
+        ESP32 -->|GPIO5| IR_RX
+        ESP32 -->|UART0_TX| RP2040
+        RP2040 -->|UART0_RX| ESP32
+    end
+
+    %% ================ MÓDULO SDR ================
+    subgraph "FPGA iCE40LP1K (Controle SDR)"
+        FPGA -->|SPI| AT86RF215
+        FPGA -->|GPIO8| RFFC5072["RFFC5072 (ENABLE)"]
+        FPGA -->|GPIO9| RFFC5072["RFFC5072 (SLEEP)"]
+    end
+
+    %% ================ ANTENAS ================
+    CC1101 --> ANT_433["Antena λ/4 433MHz"]
+    PN532 --> ANT_NFC["Antena PCB 13.56MHz"]
+    AT86RF215 --> ANT_900["Antena SMA 900MHz"]
+    AT86RF215 --> ANT_24["Antena SMA 2.4GHz"]
+    LMS6002D --> ANT_SDR["Antena Wideband SMA"]
+
+    %% ================ STYLES ================
+    style ALIMENTAÇÃO fill:#1a1a2e,stroke:#4a4a8a
+    style RP2040 fill:#003366,stroke:#0066cc
+    style ESP32 fill:#663300,stroke:#cc6600
+    style FPGA fill:#330066,stroke:#6600cc

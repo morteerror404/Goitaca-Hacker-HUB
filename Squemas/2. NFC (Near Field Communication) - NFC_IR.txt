@@ -1,0 +1,20 @@
+graph TD
+    subgraph NFC_IR
+        STM32 -->|I2C| PN532_I2C["I2C PN532"]
+        PN532_I2C --> PN532["Módulo NFC PN532"]
+        PN532 --> LOOP_ANT["NFC Ant Loop"]
+        VCC_3V3 --> PN532
+        GND --> PN532
+
+        STM32 -->|GPIO| IR_TX["GPIO IR TX"]
+        IR_TX --> R_IR["Resistor 33Ω"]
+        R_IR --> IR_EMITTER["TSAL6200 Emitter"]
+        IR_EMITTER --> GND
+
+        IR_RX["VS1838B IR RX"] -->|GPIO| STM32
+        IR_RX --> R_PULLUP["Pull-up 10kΩ"]
+        R_PULLUP --> VCC_3V3
+        IR_RX --> C_IR["Capacitor 100nF"]
+        C_IR --> GND
+        VCC_3V3 --> IR_RX
+    end

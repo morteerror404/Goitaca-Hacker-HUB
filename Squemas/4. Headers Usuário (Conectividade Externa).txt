@@ -1,0 +1,30 @@
+graph TD
+    subgraph Headers
+        VCC_3V3 --> I2C_HEADER["Header I2C 4p"]
+        SDA -- I2C_HEADER
+        SCL -- I2C_HEADER
+        I2C_HEADER --> PULLUP_SDA["Pull-up 4.7kOhn SDA"]
+        PULLUP_SDA --> VCC_3V3
+        I2C_HEADER --> PULLUP_SCL["Pull-up 4.7kOhn SCL"]
+        PULLUP_SCL --> VCC_3V3
+        GND --> I2C_HEADER
+
+        VCC_3V3 --> UART_HEADER["Header UART 4p"]
+        TX --> UART_HEADER
+        RX --> UART_HEADER
+        GND --> UART_HEADER
+
+        VCC_3V3 --> SPI_HEADER["Header SPI 6p"]
+        MOSI --> SPI_HEADER
+        MISO --> SPI_HEADER
+        SCK --> SPI_HEADER
+        CS --> SPI_HEADER
+        GND --> SPI_HEADER
+
+        VCC_3V3 --> BTN_HEADER["Header Botões 4p"]
+        BTN1 --> BTN_HEADER
+        BTN2 --> BTN_HEADER
+        BTN3 --> BTN_HEADER
+        BTN4 --> BTN_HEADER
+        GND --> BTN_HEADER
+    end

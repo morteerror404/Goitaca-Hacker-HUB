@@ -1,0 +1,18 @@
+graph TD
+    subgraph Interface_Usuario
+        STM32 -->|GPIO| BTN1["Botão 1"]
+        STM32 -->|GPIO| BTN2["Botão 2"]
+        STM32 -->|GPIO| BTN3["Botão 3"]
+        STM32 -->|GPIO| BTN4["Botão 4"]
+        STM32 -->|GPIO| LED_CTRL["LED Status"]
+        LED_CTRL --> LED_RES["Resistor 330Ω"]
+        LED_RES --> LED["LED Verde"]
+        LED --> GND
+    end
+
+    subgraph OLED_Module
+        VCC_3V3 --> OLED["SSD1306 0.96 I2C OLED"]
+        OLED -->|SDA| STM32
+        OLED -->|SCL| STM32
+        GND --> OLED
+    end
