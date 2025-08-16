@@ -1,0 +1,43 @@
+graph TD
+    %% ==================== Raspberry Pi Pico RP2040 ====================
+    subgraph Raspberry_Pi_Pico["Raspberry Pi Pico RP2040"]
+        RP2040_VCC["3.3V"]
+        RP2040_GND["GND"]
+        RP2040_TX["UART0 TX GPIO0 / GP0"]
+        RP2040_RX["UART0 RX GPIO1 / GP1"]
+        RP2040_SCK["SPI0 SCK GPIO2 / GP2"]
+        RP2040_MOSI["SPI0 MOSI GPIO3 / GP3"]
+        RP2040_MISO["SPI0 MISO GPIO4 / GP4"]
+        RP2040_CS["SPI0 CS GPIO5 / GP5"]
+        RP2040_RST["RESET_OUT"]
+    end
+
+    %% ==================== ESP32-S3 DevKit ====================
+    subgraph ESP32_S3["ESP32-S3 DevKit"]
+        ESP32_VCC["3.3V IN"]
+        ESP32_GND["GND"]
+        ESP32_RX["UART RX GPIO17"]
+        ESP32_TX["UART TX GPIO18"]
+        ESP32_SCK["SPI SCK GPIO12"]
+        ESP32_MOSI["SPI MOSI GPIO11"]
+        ESP32_MISO["SPI MISO GPIO13"]
+        ESP32_CS["SPI CS GPIO10"]
+        ESP32_EN["EN / Reset"]
+    end
+
+    %% ==================== Conexões de Alimentação ====================
+    RP2040_VCC --> ESP32_VCC
+    RP2040_GND --> ESP32_GND
+
+    %% ==================== Conexões UART ====================
+    RP2040_TX --> ESP32_RX
+    RP2040_RX --> ESP32_TX
+
+    %% ==================== Conexões SPI ====================
+    RP2040_SCK --> ESP32_SCK
+    RP2040_MOSI --> ESP32_MOSI
+    RP2040_MISO --> ESP32_MISO
+    RP2040_CS --> ESP32_CS
+
+    %% ==================== Conexão de Reset ====================
+    RP2040_RST --> ESP32_EN

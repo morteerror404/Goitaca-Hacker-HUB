@@ -1,90 +1,170 @@
 graph TD
-    %% ==================== POWER SUPPLY ====================
-    subgraph POWER["🔋 Power Supply"]
-        USB_IN["Micro USB 5V"] --> FUSE["F1: PTC Fuse 3A"]
-        FUSE --> TP5100["U1: TP5100 Charger"]
-        TP5100 --> BAT["BAT: 2x18650 3.7V"]
-        BAT --> MP1584["U2: MP1584EN-3.3V"]
-        MP1584 --> VCC_3V3["3.3V Rail"]
-        
-        TP5100 --> CHG_LED["D1: Blue LED (Charging)"]
-        TP5100 --> FULL_LED["D2: Green LED (Full)"]
-        CHG_LED --> R1["R1: 330Ω"]
-        FULL_LED --> R2["R2: 330Ω"]
-        
-        VCC_3V3 --> LDO_2V5["U3: AP2114K-2.5V"]
-        VCC_3V3 --> LDO_1V2["U4: LP5907MFX-1.2V"]
-        
-        %% Decoupling Caps
-        C1["C1: 10μF 25V"] --> TP5100
-        C2["C2: 100nF X7R"] --> TP5100
-        C3["C3: 22μF 6.3V"] --> MP1584
-        C4["C4: 100nF X7R"] --> MP1584
-        C5["C5: 10μF 6.3V"] --> LDO_2V5
-        C6["C6: 100nF X7R"] --> LDO_2V5
-        C7["C7: 1μF 6.3V"] --> LDO_1V2
-        C8["C8: 100nF X7R"] --> LDO_1V2
+    %% =============================
+    %% ALIMENTAÇÃO
+    %% =============================
+    subgraph Power_Supply
+        A[Micro USB] -->|VCC| B["Fuse 3A U4"]
+        B --> C[D1 1N5819W SL]
+        C -->|Catodo| D[V_SYS]
+        E[BAT 18650 Paralelo] --> F[D2 1N5819W SL]
+        F -->|Catodo| D
+        D --> G[LDO MCP1700-3.3]
+        G --> H[3.3V_OUT]
+        H --> I[Jumper P2 H-Fem-12]
+        I --> J[Sistema 3.3V In]
+        B --> K[Barramento 5V P2 Pin 1]
+        K --> L[Barramento 5V P2 Pin 2]
+        L --> M[GND]
+        D --> N[TP5100 U12 VIN]
+        E --> O[TP5100 U12 BAT]
+        N --> P[TP5100]
+        O --> P
+        P -->|CHRG#| Q[LED Azul LED2 via R5 330Ω]
+        P -->|STDBY#| R[LED Verde LED1 via R6 330Ω]
+        A -->|GND| M
+        H --> M
+        J --> M
     end
 
-    %% ==================== MCU CORE ====================
-    subgraph MCU_CORE["🖥️ MCU Core"]
-        STM32["U5: STM32H743VIT6 - ESP32"] -->|SPI1| RF_MODEM
-        STM32 -->|I2C1| NFC_CTRL
-        STM32 -->|USART1| RP2040
-        STM32 -->|GPIO| USER_BTNS["SW1-SW4: Tactile Buttons"]
-        STM32 -->|GPIO| STATUS_LED["D3: Green LED\nR3: 330Ω"]
-        
-        RP2040["U6: RP2040 - RSP PICO"] -->|SPI0| RF_MIXER
-        RP2040 -->|GPIO| RF_LEDS["D4-D5: RF Activity\nR4-R5: 330Ω"]
+    %% =============================
+    %% INTERFACE DE USUÁRIO
+    %% =============================
+    subgraph Interface_Usuario
+        STM32 -->|GPIO| BTN1["Botão 1"]
+        STM32 -->|GPIO| BTN2["Botão 2"]
+        STM32 -->|GPIO| BTN3["Botão 3"]
+        STM32 -->|GPIO| BTN4["Botão 4"]
+        STM32 -->|GPIO| LED_CTRL["LED Status"]
+        LED_CTRL --> LED_RES["Resistor 330Ω"]
+        LED_RES --> LED["LED Verde"]
+        LED --> M
     end
 
-    %% ==================== RF SUBSYSTEM ====================
-    subgraph RF["📡 RF Subsystem"]
-        RF_MODEM["U7: AT86RF215"] -->|RF09_N/P| SUB1G_ANT["J1: SMA Sub-1GHz"]
-        RF_MODEM -->|RF24_N/P| BLE_ANT["J2: SMA 2.4GHz"]
-        
-        RF_MIXER["U8: RFFC5072"] -->|RF_IN| BANDPASS["FL1: SAW Bandpass"]
-        RF_MIXER -->|LO_IN| LPF["FL2: SAW Lowpass"]
-        RF_MIXER -->|IF_OUT| IF_FILTER["FL3: 5th Order LPF"]
-        BANDPASS --> SDR_ANT["J3: SMA 30MHz-6GHz"]
-        
-        %% Matching Networks
-        SUB1G_ANT --> L2["L2: 15nH"] --> C9["C9: 1.8pF"] --> GND
-        BLE_ANT --> L3["L3: 5.6nH"] --> C10["C10: 1.2pF"] --> GND
-        
-        %% Clocking
-        TCXO["Y1: 26MHz TCXO"] --> C11["C11: 12pF"] --> GND
-        TCXO --> C12["C12: 12pF"] --> GND
+    %% =============================
+    %% OLED DISPLAY
+    %% =============================
+    subgraph OLED_Module
+        H --> OLED["SSD1306 0.96 I2C OLED"]
+        OLED -->|SDA| STM32
+        OLED -->|SCL| STM32
+        M --> OLED
     end
 
-    %% ==================== NFC/IR SUBSYSTEM ====================
-    subgraph NFC_IR["📲 NFC/IR Subsystem"]
-        NFC_CTRL["U9: PN532"] --> NFC_ANT["L1: 1.5μH Antenna Loop"]
-        NFC_ANT --> C13["C13: 27pF"] --> C14["C14: 27pF"] --> GND
-        
-        IR_TX["Q1: TSAL6200"] --> R6["R6: 33Ω"] --> STM32
-        IR_RX["U10: VS1838B"] --> R7["R7: 10kΩ Pullup"]
-        IR_RX --> C15["C15: 100nF Decoupling"]
+    %% =============================
+    %% NFC + IR
+    %% =============================
+    subgraph NFC_IR
+        STM32 -->|I2C| PN532_I2C["I2C PN532"]
+        PN532_I2C --> PN532["Módulo NFC PN532"]
+        PN532 --> LOOP_ANT["NFC Ant Loop"]
+        H --> PN532
+        M --> PN532
+
+        STM32 -->|GPIO| IR_TX["GPIO IR TX"]
+        IR_TX --> R_IR["Resistor 33Ω"]
+        R_IR --> IR_EMITTER["TSAL6200 Emitter"]
+        IR_EMITTER --> M
+
+        IR_RX["VS1838B IR RX"] -->|GPIO| STM32
+        IR_RX --> R_PULLUP["Pull-up 10kΩ"]
+        R_PULLUP --> H
+        IR_RX --> C_IR["Capacitor 100nF"]
+        C_IR --> M
+        H --> IR_RX
     end
 
-    %% ==================== USER INTERFACE ====================
-    subgraph UI["🖥️ User Interface"]
-        OLED["U11: SSD1306 128x64"] -->|I2C| STM32
-        PMOD["J4: 12-pin PMOD"] -->|SPI/UART| RP2040
-        DEBUG["J5: SWD Header"] --> STM32
-    end
+    %% =============================
+    %% SDR CLONE REFINADO (RP2040) - Detalhado
+    %% =============================
+    subgraph SDR_Clone_Refinado
+        %% -----------------------------
+        %% MCU Principal
+        RP2040["RP2040 MCU Controle Principal"]
+        H --> RP2040_VCC["3.3V"]
+        M --> RP2040_GND["GND"]
 
-    %% ==================== POWER DISTRIBUTION ====================
-    VCC_3V3 --> MCU_CORE
-    VCC_3V3 --> RF
-    VCC_3V3 --> NFC_IR
-    VCC_3V3 --> UI
-    
-    LDO_2V5 --> FPGA_VCCIO["2.5V Rail"]
-    LDO_1V2 --> FPGA_CORE["1.2V Rail"]
-    
-    GND --> POWER
-    GND --> MCU_CORE
-    GND --> RF
-    GND --> NFC_IR
-    GND --> UI
+        %% ====================
+        %% Pinos do RP2040 utilizados
+        %% ====================
+        RP2040_GP0["GP0: UART0 TX / SPI0 RX / I2C0 SDA"]
+        RP2040_GP1["GP1: UART0 RX / SPI0 CSn / I2C0 SCL"]
+        RP2040_GP2["GP2: SPI0 SCK / I2C1 SDA"]
+        RP2040_GP3["GP3: SPI0 TX / I2C1 SCL"]
+        RP2040_GP4["GP4: UART1 TX / SPI0 RX / I2C0 SDA"]
+        RP2040_GP5["GP5: UART1 RX / SPI0 CSn / I2C0 SCL"]
+        RP2040_GP16["GP16: UART0 RX / SPI0 RX / I2C0 SCL"]
+        RP2040_GP17["GP17: UART0 TX / SPI0 CSn / I2C0 SCL"]
+
+        %% -----------------------------
+        %% Controladores de faixa
+        RP2040 -->|SPI0| MODEM["AT86RF215 Modem"]
+        RP2040 -->|GPIO CTRL| MIXER["RFFC5072 Mixer"]
+        RP2040 -->|GPIO CTRL| HF_FRONTEND_CTRL["HF Front-End 15-30 MHz Control"]
+
+        %% ====================
+        %% Front-Ends RF
+        MODEM --> RF_SUB1G["RF Front-End Sub-1GHz"]
+        MIXER --> RF_6GHz["RF Front-End 30MHz-6GHz"]
+        HF_FRONTEND_CTRL --> HF_FRONTEND["HF Front-End 15-30 MHz"]
+
+        %% Relés RF
+        HF_RELAY["RF Relay HF"] --> SMA_HF["SMA Connector 15-30 MHz"]
+        SUB1G_RELAY["RF Relay Sub-1GHz"] --> SMA_SUB1G["SMA Connector Sub-1GHz"]
+        MIXER_RELAY["RF Relay 30MHz-6GHz"] --> SMA_6GHz["SMA Connector 30MHz-6GHz"]
+
+        RF_SUB1G --> SUB1G_RELAY
+        RF_6GHz --> MIXER_RELAY
+        HF_FRONTEND --> HF_RELAY
+
+        %% Alimentação filtrada para HF
+        H --> LDO_HF["LDO + Ferrite HF"]
+        LDO_HF --> HF_FRONTEND
+        M --> HF_FRONTEND
+
+        %% Alimentação restante
+        H --> MODEM
+        H --> MIXER
+        M --> MODEM
+        M --> MIXER
+
+        %% Clock
+        TCXO["TCXO 26MHz"] --> CLK_BUFFER["Buffer Clock"]
+        CLK_BUFFER --> RP2040
+        CLK_BUFFER --> MODEM
+        CLK_BUFFER --> MIXER
+        CLK_BUFFER --> HF_FRONTEND
+        H --> TCXO
+        M --> TCXO
+        H --> CLK_BUFFER
+        M --> CLK_BUFFER
+        EXT_CLK["External REF IN"] --> MIXER
+
+        %% Interfaces extras
+        RP2040 -->|GPIO| PMOD["PMOD Header 12p"]
+        H --> PMOD
+        M --> PMOD
+
+        RP2040 --> LED_STATUS["RF Activity LEDs"]
+        LED_STATUS -->|330Ω| M
+
+        USER_SW["User Switch"] --> RP2040
+
+        %% ====================
+        %% Integração com ESP32-S3 (Wi-Fi / BT)
+        %% ====================
+        RP2040_GP0 -->|UART0 TX| ESP32_RX["ESP32 RX GPIO17"]
+        RP2040_GP1 -->|UART0 RX| ESP32_TX["ESP32 TX GPIO18"]
+        RP2040_GP16 -->|UART0 RX| ESP32_RX
+        RP2040_GP17 -->|UART0 TX| ESP32_TX
+
+        RP2040_GP2 -->|SPI0 SCK| ESP32_SCK["ESP32 SPI SCK GPIO12"]
+        RP2040_GP3 -->|SPI0 MOSI| ESP32_MOSI["ESP32 SPI MOSI GPIO11"]
+        RP2040_GP0 -->|SPI0 MISO| ESP32_MISO["ESP32 SPI MISO GPIO13"]
+        RP2040_GP1 -->|SPI0 CS| ESP32_CS["ESP32 SPI CS GPIO10"]
+
+        RP2040_RST["RESET_OUT"] --> ESP32_EN["ESP32 EN / Reset"]
+
+        %% Alimentação para ESP32
+        H --> ESP32_VCC["ESP32 3.3V IN"]
+        M --> ESP32_GND["ESP32 GND"]
+    end

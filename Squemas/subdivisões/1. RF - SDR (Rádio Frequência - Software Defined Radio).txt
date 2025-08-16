@@ -1,41 +1,225 @@
 graph TD
-    subgraph SDR_Clone_Simplificado
-        RP2040["RP2040 MCU (Controle Principal)"]
-        VCC_3V3 --> RP2040
-        GND --> RP2040
+    %% =============================
+    %% Alimentação
+    %% =============================
+    H[3.3V_OUT] --> RP2040_VCC["RP2040 VCC 3.3V"]
+    M[GND] --> RP2040_GND["RP2040 GND"]
+    H --> ESP32_VCC["ESP32 3.3V IN"]
+    M --> ESP32_GND["ESP32 GND"]
+    H --> MODEM_VCC["AT86RF215 VDD 3.3V"]
+    M --> MODEM_GND["AT86RF215 GND"]
+    H --> MIXER_VDD["RFFC5072 VDD 3.3V"]
+    M --> MIXER_GND["RFFC5072 GND"]
+    H --> HF_FRONTEND_VDD["HF Front-End 3.3V"]
+    M --> HF_FRONTEND_GND["HF Front-End GND"]
 
-        RP2040 -->|SPI| MODEM["AT86RF215 Modem"]
-        RP2040 -->|CTRL| MIXER["RFFC5072 Mixer"]
+    %% =============================
+    %% MCU Principal - RP2040
+    %% =============================
+    RP2040["RP2040 MCU Controle Principal"]
 
-        MODEM --> RF_SUB1G["RF Front-End Sub-1GHz"]
-        MIXER --> RF_6GHz["RF Front-End 30MHz-6GHz"]
+    %% -----------------------------
+    %% Todos os pinos do RP2040
+    RP2040_GP0["GP0: UART0 TX / SPI0 RX / I2C0 SDA"]
+    RP2040_GP1["GP1: UART0 RX / SPI0 CSn / I2C0 SCL"]
+    RP2040_GP2["GP2: SPI0 SCK / I2C1 SDA"]
+    RP2040_GP3["GP3: SPI0 MOSI / I2C1 SCL"]
+    RP2040_GP4["GP4: UART1 TX / SPI0 RX / I2C0 SDA"]
+    RP2040_GP5["GP5: UART1 RX / SPI0 CSn / I2C0 SCL"]
+    RP2040_GP6["GP6: GPIO / ADC / PWM"]
+    RP2040_GP7["GP7: GPIO / ADC / PWM"]
+    RP2040_GP8["GP8: GPIO / ADC / PWM"]
+    RP2040_GP9["GP9: GPIO / ADC / PWM"]
+    RP2040_GP10["GP10: GPIO / ADC / PWM"]
+    RP2040_GP11["GP11: GPIO / ADC / PWM"]
+    RP2040_GP12["GP12: XIN / GPIO / PWM"]
+    RP2040_GP13["GP13: XOUT / GPIO / PWM"]
+    RP2040_GP14["GP14: GPIO / PWM"]
+    RP2040_GP15["GP15: GPIO / PWM"]
+    RP2040_GP16["GP16: UART0 RX / SPI0 RX / I2C0 SCL"]
+    RP2040_GP17["GP17: UART0 TX / SPI0 CSn / I2C0 SCL"]
+    RP2040_GP18["GP18: GPIO / PWM"]
+    RP2040_GP19["GP19: GPIO / PWM"]
+    RP2040_GP20["GP20: GPIO / PWM / I2C0 SDA"]
+    RP2040_GP21["GP21: GPIO / PWM / I2C0 SCL"]
+    RP2040_GP22["GP22: GPIO / ADC"]
+    RP2040_GP26["GP26: ADC0 / GPIO"]
+    RP2040_GP27["GP27: ADC1 / GPIO"]
+    RP2040_GP28["GP28: ADC2 / GPIO"]
+    RP2040_RST["RESET_OUT"]
 
-        RF_SUB1G --> SMA_SUB1G["SMA Connector Sub-1GHz"]
-        RF_6GHz --> SMA_6GHz["SMA Connector 30MHz-6GHz"]
+    %% Alimentação para RP2040
+    RP2040_VCC --> RP2040
+    RP2040_GND --> RP2040
 
-        VCC_3V3 --> MODEM
-        VCC_3V3 --> MIXER
-        GND --> MODEM
-        GND --> MIXER
+    %% =============================
+    %% Clock
+    %% =============================
+    TCXO["TCXO 26MHz"]
+    TCXO --> C11["C11: 12pF"] --> M
+    TCXO --> C12["C12: 12pF"] --> M
+    TCXO --> CLK_BUF["Buffer Clock"]
+    CLK_BUF --> RP2040_GP12["RP2040 XIN / GP12"]
+    CLK_BUF --> RP2040_GP13["RP2040 XOUT / GP13"]
+    CLK_BUF --> MODEM
+    CLK_BUF --> MIXER
+    CLK_BUF --> HF_FRONTEND
+    EXT_CLK["External REF IN"] --> MIXER
 
-        TCXO["TCXO 26MHz"] --> RP2040
-        TCXO --> MODEM
-        TCXO --> MIXER
-        VCC_3V3 --> TCXO
-        GND --> TCXO
-        EXT_CLK["External REF IN"] --> MIXER
+    H --> TCXO
+    M --> TCXO
+    H --> CLK_BUF
+    M --> CLK_BUF
 
-        RP2040 -->|GPIO| PMOD["PMOD Header 12p"]
-        VCC_3V3 --> PMOD
-        GND --> PMOD
+    %% =============================
+    %% Controladores de faixa
+    %% =============================
+    RP2040_GP0 -->|SPI0| MODEM["AT86RF215 Modem"]
+    RP2040_GP1 -->|GPIO CTRL| MIXER["RFFC5072 Mixer"]
+    RP2040_GP2 -->|GPIO CTRL| HF_CTRL["HF Front-End 15-30 MHz Control"]
 
-        RP2040 --> LED_STATUS["RF Activity LEDs"]
-        LED_STATUS -->|330Ω| GND
+    %% =============================
+    %% Front-Ends RF
+    %% =============================
+    MODEM --> RF_SUB1G["RF Front-End Sub-1GHz"]
+    RF_SUB1G --> SUB1G_RELAY["RF Relay Sub-1GHz"] --> SMA_SUB1G["SMA Sub-1GHz"]
 
-        USER_SW["User Switch"] --> RP2040
+    MIXER --> RF_6GHz["RF Front-End 30MHz-6GHz"]
+    RF_6GHz --> MIXER_RELAY["RF Relay 30MHz-6GHz"] --> SMA_6GHz["SMA 30MHz-6GHz"]
 
-        %% Integração com ESP32-S3
-        RP2040 -->|UART/SPI| ESP32["ESP32-S3 (Comunicação Wi-Fi/BT)"]
-        VCC_3V3 --> ESP32
-        GND --> ESP32
+    HF_CTRL --> HF_FRONTEND["HF Front-End 15-30 MHz"]
+    HF_FRONTEND --> HF_RELAY["RF Relay HF"] --> SMA_HF["SMA 15-30 MHz"]
+
+    %% =============================
+    %% RFFC5072 pinos detalhados
+    %% =============================
+    RFFC5072 --> LO_IN["LO IN 50Ω matched"]
+    RFFC5072 --> RF_IN["RF IN 50Ω matched"]
+    RFFC5072 --> IF_OUT["IF OUT 50Ω matched"]
+    LO_IN --> FL1["FL1: LPF 7th Order SAW"]
+    RF_IN --> FL2["FL2: BPF SAW"]
+    IF_OUT --> FL3["FL3: LPF 5th Order"]
+
+    VDD_MIXER["VDD 3.3V"] --> C9["C9: 100nF"] --> M
+    VDD_MIXER --> C10["C10: 1µF"] --> M
+
+    %% =============================
+    %% Interfaces extras
+    %% =============================
+    RP2040 -->|GPIO| PMOD["PMOD Header 12p"]
+    H --> PMOD
+    M --> PMOD
+    RP2040 --> LED_STATUS["RF Activity LEDs"]
+    LED_STATUS -->|330Ω| M
+    USER_SW["User Switch"] --> RP2040
+
+    %% =============================
+    %% Integração com ESP32-S3
+    %% =============================
+    RP2040_GP0 -->|UART0 TX| ESP32_RX["ESP32 RX GPIO17"]
+    RP2040_GP1 -->|UART0 RX| ESP32_TX["ESP32 TX GPIO18"]
+    RP2040_GP16 -->|UART0 RX| ESP32_RX
+    RP2040_GP17 -->|UART0 TX| ESP32_TX
+
+    RP2040_GP2 -->|SPI0 SCK| ESP32_SCK["ESP32 SPI SCK GPIO12"]
+    RP2040_GP3 -->|SPI0 MOSI| ESP32_MOSI["ESP32 SPI MOSI GPIO11"]
+    RP2040_GP0 -->|SPI0 MISO| ESP32_MISO["ESP32 SPI MISO GPIO13"]
+    RP2040_GP1 -->|SPI0 CS| ESP32_CS["ESP32 SPI CS GPIO10"]
+
+    RP2040_RST --> ESP32_EN["ESP32 EN / Reset"]
+
+    %% Todos os pinos do ESP32-S3 DevKit
+    ESP32_GPIO0["GPIO0"]
+    ESP32_GPIO1["GPIO1"]
+    ESP32_GPIO2["GPIO2"]
+    ESP32_GPIO3["GPIO3"]
+    ESP32_GPIO4["GPIO4"]
+    ESP32_GPIO5["GPIO5"]
+    ESP32_GPIO6["GPIO6"]
+    ESP32_GPIO7["GPIO7"]
+    ESP32_GPIO8["GPIO8"]
+    ESP32_GPIO9["GPIO9"]
+    ESP32_GPIO10["GPIO10 SPI CS"]
+    ESP32_GPIO11["GPIO11 SPI MOSI"]
+    ESP32_GPIO12["GPIO12 SPI SCK"]
+    ESP32_GPIO13["GPIO13 SPI MISO"]
+    ESP32_GPIO14["GPIO14"]
+    ESP32_GPIO15["GPIO15"]
+    ESP32_GPIO16["GPIO16"]
+    ESP32_GPIO17["GPIO17 UART RX"]
+    ESP32_GPIO18["GPIO18 UART TX"]
+    ESP32_GPIO19["GPIO19"]
+    ESP32_GPIO20["GPIO20"]
+    ESP32_GPIO21["GPIO21"]
+    ESP32_EN["EN / Reset"]
+
+graph TD
+    %% =============================================
+    %% MÓDULO PRINCIPAL: RFFC5072 (32-QFN)
+    %% =============================================
+    subgraph IC[RFFC5072 - Conversor RF]
+        direction TB
+        VDD[Pino 5/22: 3.3V] --> C_DEC1[100nF] --> GND
+        VDD --> C_DEC2[1µF] --> GND
+        GND[Pino 2/32: GND]
+        
+        %% --- Clock ---
+        XTAL[Pino 10: REF_IN] --> C_XTAL[22pF] --> GND
+        XTAL --> R_XTAL[10kΩ] --> VDD
+        
+        %% --- Controle ---
+        RP2040 -->|SPI| SCLK[Pino 31]
+        RP2040 -->|SPI| SDATA[Pino 32]
+        RP2040 -->|GPIO| ENBL[Pino 1]
+        RP2040 -->|GPIO| RESET[Pino 29]
     end
+
+    %% =============================================
+    %% MÓDULO LO (OSCILADOR LOCAL)
+    %% =============================================
+    subgraph LO[LO Input]
+        direction LR
+        PLL[PLL/VCO 1.5-4GHz] -->|AC| C_LO[100pF DC Block]
+        C_LO --> L_LO[15nH] --> LO_IN[Pino 2: EXT_LO]
+        LO_IN --> C_GND[1pF] --> GND
+    end
+
+    %% =============================================
+    %% MÓDULO RF (ENTRADA DA ANTENA)
+    %% =============================================
+    subgraph RF[RF Input]
+        direction LR
+        ANT[Antena] -->|AC| C_ANT[100pF DC Block]
+        C_ANT --> L_ANT[22nH] --> FL_SAW[SAW BPF 30MHz-6GHz]
+        FL_SAW --> R_MATCH[50Ω] --> RF_IN[Pino 23/24: MIX2_IPP/MIX2_IPN]
+        RF_IN --> C_RFGND[1pF] --> GND
+    end
+
+    %% =============================================
+    %% MÓDULO IF (SAÍDA PARA ADC)
+    %% =============================================
+    subgraph IF[IF Output]
+        direction LR
+        IF_OUT[Pino 27/28: MIX2_OPN/MIX2_OPP] --> R_IF[50Ω]
+        R_IF --> FL_LPF[LPF 500MHz] --> C_IF[100pF DC Block]
+        C_IF --> AMP[Amplificador IF] --> ADC[ADC do RP2040]
+    end
+
+    %% =============================================
+    %% MÓDULO FILTROS E CASAMENTO
+    %% =============================================
+    subgraph FILTROS[Filtros Específicos]
+        direction TB
+        FL_SAW -->|SAW BPF| F1[Johanson 3700BL15B050]
+        FL_LPF -->|LPF| F2[LFCN-500+]
+        FL_LO -->|SAW LPF| F3[SF2149E]
+    end
+
+    %% =============================================
+    %% CONEXÕES ENTRE MÓDULOS
+    %% =============================================
+    IC -->|LO_IN| LO
+    IC -->|RF_IN| RF
+    IC -->|IF_OUT| IF
+    RF -->|Filtro| FILTROS
+    LO -->|Filtro| FILTROS
