@@ -1,0 +1,30 @@
+graph TD
+    %% -------------------- SDR CLONE SEM FPGA --------------------
+    subgraph SDR_Clone
+        VCC_3V3 --> MODEM["AT86RF215 Modem"]
+        VCC_3V3 --> MIXER["RFFC5072 Mixer"]
+        GND --> MODEM
+        GND --> MIXER
+
+        MODEM --> RF_SUB1G["RF Front-End Sub-1GHz"]
+        MIXER --> RF_6GHz["RF Front-End 30MHz-6GHz"]
+        RF_SUB1G --> SMA_SUB1G["SMA Connector Sub-1GHz"]
+        RF_6GHz --> SMA_6GHz["SMA Connector 30MHz-6GHz"]
+
+        TCXO["TCXO 26MHz"] --> MODEM
+        TCXO --> MIXER
+        VCC_3V3 --> TCXO
+        GND --> TCXO
+        EXT_CLK["External REF IN"] --> MIXER
+
+        PMOD["PMOD Header 12p"]
+        VCC_3V3 --> PMOD
+        GND --> PMOD
+
+        LED_STATUS["RF Activity LEDs"]
+        LED_STATUS -->|330Ω| GND
+
+        USER_SW["User Switch"]
+
+        GPIO_STM32["STM32 GPIO"]
+    end
