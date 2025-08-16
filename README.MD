@@ -15,7 +15,7 @@ Este não é um "dispositivo". É uma **arma de guerra digital**, forjada com:
 
 | **ARMAMENTO**        | **GOITACÁ HACKER-HUB**                     | **FLIPPER ZERO (Criança)**    | **HACKRF (Velho Decrépito)**  |  
 |----------------------|--------------------------------------------|-------------------------------|------------------------------ |  
-| **ALCANCE**          | 30MHz-6GHz (vergonha profissional)         | Brinca no sub-GHz             | Até 6GHz mas só olhando       |  
+| **ALCANCE**          | 30MHz-6GHz                                 | Brinca no sub-GHz             | Até 6GHz mas só olhando       |  
 | **PODER**            | RP2040+ESP32 (dois cérebros)               | STM32 capenga                 | LPC4320 cansado               |  
 | **LIBERDADE**        | Headers PMOD/I2C/SPI (Expansão sem limites)| Gaiola de plástico            | Sucata sem GPIO               |  
 | **MAGIA NEGRA**      | NFC+IR+RF+Deauth (kit completo)            | NFC de mentirinha             | Só escuta, não ataca          |  
