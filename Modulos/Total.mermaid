@@ -1,58 +1,14 @@
 graph TD
+    %% -------------------- SDR CLONE --------------------
+    subgraph CaribouLite_SDR_Clone
+        FPGA["iCE40LP1K FPGA"]
+        VCC_3V3 --> FPGA
+        FPGA_VCCIO --> FPGA
+        FPGA_VCCORE --> FPGA
+        GND --> FPGA
 
-    %% -------------------- Alimentação --------------------
-    subgraph Alimentação
-        USB_IN["Micro USB 5V"] --> FUSE["Fusível 3A"]
-        FUSE --> TP5100_IN["TP5100 VIN"]
-        TP5100_IN --> TP5100["TP5100 Charger 4.2V"]
-        TP5100 -->|BAT+/BAT-| BAT["2x 18650 3.7V 6000-7000mAh"]
-        BAT -->|+3.7V| MP1584_VIN["MP1584 VIN"]
-        TP5100 -->|OUT+| MP1584_VIN
-        TP5100 -->|OUT-| GND["GND"]
-        MP1584_VIN --> MP1584["MP1584 3.3V"]
-        MP1584 --> VCC_3V3["3.3V Sistema"]
-
-        TP5100 --> LED_B["LED Charging"]
-        TP5100 --> LED_Y["LED Charged"]
-        LED_B --> GND
-        LED_Y --> GND
-    end
-
-    %% -------------------- Lógica Principal --------------------
-    subgraph STM32["STM32H743 - Núcleo Principal"]
-        VCC_3V3 --> STM32
-        GND --> STM32
-
-        STM32 --> SDA["SDA"]
-        STM32 --> SCL["SCL"]
-        STM32 --> TX["TX"]
-        STM32 --> RX["RX"]
-        STM32 --> MOSI["MOSI"]
-        STM32 --> MISO["MISO"]
-        STM32 --> SCK["SCK"]
-        STM32 --> CS["CS"]
-        STM32 --> USB_D+["USB D+"]
-        STM32 --> USB_D-["USB D-"]
-        STM32 --> USB_HUB["USB2512B Hub"]
-    end
-
-    subgraph USB_Hub
-        USB_HUB --> USB_PORT1["USB Port 1"]
-        USB_HUB --> USB_PORT2["USB Port 2"]
-        VCC_3V3 --> USB_HUB
-        GND --> USB_HUB
-    end
-
-    subgraph EEPROM
-        EEPROM["RPi-HAT EEPROM"] -->|I2C| STM32
-        VCC_3V3 --> EEPROM
-        GND --> EEPROM
-    end
-
-    %% -------------------- RF - SDR --------------------
-    subgraph SDR_Block
-        STM32 -->|SPI| MODEM["AT86RF215 Modem"]
-        STM32 -->|CTRL| MIXER["RFFC5072 Mixer"]
+        FPGA -->|SPI| MODEM["AT86RF215 Modem"]
+        FPGA -->|CTRL| MIXER["RFFC5072 Mixer"]
         MODEM --> RF_SUB1G["RF Front-End Sub-1GHz"]
         MIXER --> RF_6GHz["RF Front-End 30MHz-6GHz"]
         RF_SUB1G --> SMA_SUB1G["SMA Connector Sub-1GHz"]
@@ -63,32 +19,41 @@ graph TD
         GND --> MODEM
         GND --> MIXER
 
-        TCXO["TCXO 26MHz"] --> MODEM
+        TCXO["TCXO 26MHz"] --> FPGA
+        TCXO --> MODEM
         TCXO --> MIXER
         VCC_3V3 --> TCXO
         GND --> TCXO
         EXT_CLK["External REF IN"] --> MIXER
 
-        STM32 --> LED_STATUS["RF Activity LEDs"]
+        FPGA -->|8-bit I/O| PMOD["PMOD Header 12p"]
+        VCC_3V3 --> PMOD
+        GND --> PMOD
+
+        FPGA --> LED_STATUS["RF Activity LEDs"]
         LED_STATUS -->|330Ω| GND
 
-        USER_SW["User Switch"] --> STM32
+        USER_SW["User Switch"] --> FPGA
+
+        FPGA -->|FMC Data Bus 8-bit| GPIO_STM32["STM32 GPIO"]
+        FPGA -->|SPI| GPIO_STM32
+        FPGA -->|GPIO Reset| GPIO_STM32
     end
 
-    %% -------------------- NFC / IR --------------------
+    %% -------------------- NFC & IR --------------------
     subgraph NFC_IR
-        STM32 --> PN532_I2C["I2C PN532"]
+        STM32 -->|I2C| PN532_I2C["I2C PN532"]
         PN532_I2C --> PN532["Módulo NFC PN532"]
         PN532 --> LOOP_ANT["NFC Ant Loop"]
         VCC_3V3 --> PN532
         GND --> PN532
 
-        STM32 --> IR_TX["GPIO IR TX"]
+        STM32 -->|GPIO| IR_TX["GPIO IR TX"]
         IR_TX --> R_IR["Resistor 33Ω"]
         R_IR --> IR_EMITTER["TSAL6200 Emitter"]
         IR_EMITTER --> GND
 
-        IR_RX["VS1838B IR RX"] --> STM32
+        IR_RX["VS1838B IR RX"] -->|GPIO| STM32
         IR_RX --> R_PULLUP["Pull-up 10kΩ"]
         R_PULLUP --> VCC_3V3
         IR_RX --> C_IR["Capacitor 100nF"]
@@ -96,76 +61,9 @@ graph TD
         VCC_3V3 --> IR_RX
     end
 
-    %% -------------------- Interface (Botões + Display) --------------------
-    subgraph Interface_Usuario
-        STM32 --> BTN1["Botão 1"]
-        STM32 --> BTN2["Botão 2"]
-        STM32 --> BTN3["Botão 3"]
-        STM32 --> BTN4["Botão 4"]
-        STM32 --> LED_CTRL["LED Status"]
-        LED_CTRL --> LED_RES["Resistor 330Ω"]
-        LED_RES --> LED["LED Verde"]
-        LED --> GND
-    end
-
-    subgraph OLED_Module
-        VCC_3V3 --> OLED["SSD1306 0.96 I2C OLED"]
-        OLED --> SDA_OLED["SDA"]
-        OLED --> SCL_OLED["SCL"]
-        SDA_OLED --> STM32
-        SCL_OLED --> STM32
-        GND --> OLED
-    end
-
-    %% -------------------- Headers --------------------
-    subgraph Headers
-        VCC_3V3 --> I2C_HEADER["Header I2C 4p"]
-        SDA --> I2C_HEADER
-        SCL --> I2C_HEADER
-        I2C_HEADER --> PULLUP_SDA["Pull-up 4.7kΩ SDA"]
-        PULLUP_SDA --> VCC_3V3
-        I2C_HEADER --> PULLUP_SCL["Pull-up 4.7kΩ SCL"]
-        PULLUP_SCL --> VCC_3V3
-        GND --> I2C_HEADER
-
-        VCC_3V3 --> UART_HEADER["Header UART 4p"]
-        TX --> UART_HEADER
-        RX --> UART_HEADER
-        GND --> UART_HEADER
-
-        VCC_3V3 --> SPI_HEADER["Header SPI 6p"]
-        MOSI --> SPI_HEADER
-        MISO --> SPI_HEADER
-        SCK --> SPI_HEADER
-        CS --> SPI_HEADER
-        GND --> SPI_HEADER
-
-        VCC_3V3 --> BTN_HEADER["Header Botões 4p"]
-        BTN1 --> BTN_HEADER
-        BTN2 --> BTN_HEADER
-        BTN3 --> BTN_HEADER
-        BTN4 --> BTN_HEADER
-        GND --> BTN_HEADER
-
-        VCC_3V3 --> BUS_HEADER["Header Barramentos 10p"]
-        SDA --> BUS_HEADER
-        SCL --> BUS_HEADER
-        TX --> BUS_HEADER
-        RX --> BUS_HEADER
-        MOSI --> MUX_IN1["MUX SPI IN1"]
-        MISO --> MUX_IN2["MUX SPI IN2"]
-        SCK --> MUX_IN3["MUX SPI IN3"]
-        CS --> MUX_IN4["MUX SPI IN4"]
-        MUX_IN1 --> MUX["74HC4052"]
-        MUX_IN2 --> MUX
-        MUX_IN3 --> MUX
-        MUX_IN4 --> MUX
-        MUX --> BUS_HEADER
-        STM32 --> MUX_CTRL["MUX Control GPIO"]
-        MUX_CTRL --> MUX
-        GND --> BUS_HEADER
-        BUS_HEADER --> PULLUP_BUS_SDA["Pull-up 4.7kΩ SDA"]
-        PULLUP_BUS_SDA --> VCC_3V3
-        BUS_HEADER --> PULLUP_BUS_SCL["Pull-up 4.7kΩ SCL"]
-        PULLUP_BUS_SCL --> VCC_3V3
+    %% -------------------- EEPROM --------------------
+    subgraph EEPROM_Block
+        EEPROM_CHIP["RPi-HAT EEPROM"] -->|I2C| STM32
+        VCC_3V3 --> EEPROM_CHIP
+        GND --> EEPROM_CHIP
     end
