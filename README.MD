@@ -1,3 +1,5 @@
+![Goitacá](foto.png)
+
 ### **GOITACÁ HACKER-HUB: O PESADELO DOS RADIOAMADORES**  
 *(Flipper Zero? Brinquedo de playboy. HackRF? Sucata superfaturada. Nós somos o cacique do espectro!)*  
 
@@ -16,7 +18,7 @@ Este não é um "dispositivo". É uma **arma de guerra digital**, forjada com:
 | **ARMAMENTO**        | **GOITACÁ HACKER-HUB**                     | **FLIPPER ZERO (Criança)**    | **HACKRF (Velho Decrépito)**  |  
 |----------------------|--------------------------------------------|-------------------------------|------------------------------ |  
 | **ALCANCE**          | 30MHz-6GHz                                 | Brinca no sub-GHz             | Até 6GHz mas só olhando       |  
-| **PODER**            | RP2040+ESP32 (dois cérebros)               | STM32 capenga                 | LPC4320 cansado               |  
+| **PODER**            | RP2040+ESP32 (dois cérebros)               | STM32 capenga 125kHz ou NFC   | LPC4320 cansado               |  
 | **LIBERDADE**        | Headers PMOD/I2C/SPI (Expansão sem limites)| Gaiola de plástico            | Sucata sem GPIO               |  
 | **MAGIA NEGRA**      | NFC+IR+RF+Deauth (kit completo)            | NFC de mentirinha             | Só escuta, não ataca          |  
 | **BATERIA**          | 18650 + USB-C (Caça por dias)              | Bateria de celular velho      | Cordão umbilical USB          | 
@@ -26,7 +28,7 @@ Este não é um "dispositivo". É uma **arma de guerra digital**, forjada com:
 
 ### **💥 NA PRÁTICA ISSO SIGNIFICA:**  
 - **Passa catraca** sem pagar (Todo mundo sabe que tu não aguenta pular a roleta)  
-- **Derriba Wi-Fi** alheio (igual Anatel só derruba pirata, ou ao menos deveria)  
+- **Derriba Wi-Fi** alheio (igual Anatel que só derruba pirata, ou ao menos deveria)  
 - **Controla tudo por IR** (até a TV da sogra)  
 - **Fareja espectro** como cachorro fareja um pinguço.
 
