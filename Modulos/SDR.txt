@@ -1,5 +1,5 @@
 graph TD
-    %% -------------------- SDR CLONE SEM FPGA --------------------
+    %% -------------------- SDR CLONE --------------------
     subgraph SDR_Clone
         VCC_3V3 --> MODEM["AT86RF215 Modem"]
         VCC_3V3 --> MIXER["RFFC5072 Mixer"]

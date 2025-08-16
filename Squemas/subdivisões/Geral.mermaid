@@ -1,66 +1,83 @@
 graph TD
-    %% ======= CORE SDR =======
-    subgraph SDR_Core
-        RP2040["RP2040 MCU (Controlador SDR)"]
-
-        RP2040 -->|SPI| AT86RF215["AT86RF215 Modem"]
-        RP2040 -->|CTRL| RFFC5072["RFFC5072 Mixer"]
-
-        AT86RF215 --> RF_SUB1G["RF Front-End Sub-1GHz"]
-        RFFC5072 --> RF_6GHz["RF Front-End 30MHz-6GHz"]
-
-        RF_SUB1G --> SMA_SUB1G["SMA Connector Sub-1GHz"]
-        RF_6GHz --> SMA_6GHz["SMA Connector 30MHz-6GHz"]
-
-        TCXO["TCXO 26MHz"] --> AT86RF215
-        TCXO --> RFFC5072
-        EXT_CLK["External REF IN"] --> RFFC5072
-
-        VCC_3V3 --> AT86RF215
-        VCC_3V3 --> RFFC5072
-        VCC_3V3 --> TCXO
-        GND --> AT86RF215
-        GND --> RFFC5072
-        GND --> TCXO
+    %% ============= MÓDULO DE ENERGIA =============
+    subgraph Power["🔋 Módulo de Energia"]
+        USB_IN["Micro USB 5V"] --> FUSE["F1: Fusível 3A"]
+        FUSE --> TP5100["U1: TP5100 (Carregador)"]
+        TP5100 --> BAT["B1-B2: 18650 3.7V 6000mAh"]
+        BAT --> MP1584["U2: MP1584EN (3.3V)"]
+        MP1584 --> VCC_3V3["3.3V"]
+        
+        TP5100 --> LED_B["D1: LED Azul (Carga)"]
+        TP5100 --> LED_G["D2: LED Verde (Completo)"]
+        LED_B --> R1["R1: 330Ω"]
+        LED_G --> R2["R2: 330Ω"]
+        
+        VCC_3V3 --> AP2114["U3: AP2114 (2.5V)"]
+        VCC_3V3 --> LP5907["U4: LP5907 (1.2V)"]
+        
+        %% Capacitores
+        C1["C1: 10μF 25V"] --> TP5100
+        C2["C2: 100nF"] --> TP5100
+        C3["C3: 22μF"] --> MP1584
+        C4["C4: 100nF"] --> MP1584
+        C5["C5: 10μF"] --> AP2114
+        C6["C6: 100nF"] --> AP2114
+        C7["C7: 1μF"] --> LP5907
+        C8["C8: 100nF"] --> LP5907
     end
 
-    %% ======= MCU + COMUNICAÇÃO =======
-    subgraph Control_Unit
-        STM32["STM32F4/F7 (Hub Principal)"]
-        ESP32["ESP32-S3 (Wi-Fi/Bluetooth/USB)"]
-
-        RP2040 -->|SPI| STM32
-        STM32 -->|UART| ESP32
-        STM32 -->|GPIO Reset| RP2040
-        STM32 --> LED_STATUS["Status LEDs"]
-        USER_SW["User Switch"] --> STM32
+    %% ============= MÓDULO RF/SDR =============
+    subgraph SDR["📡 Módulo RF/SDR"]
+        RP2040["U5: RP2040"] -->|SPI| AT86RF215["U6: AT86RF215"]
+        AT86RF215 --> RF09["J1: SMA Sub-1GHz"]
+        AT86RF215 --> RF24["J2: SMA 2.4GHz"]
+        
+        %% Filtros e Matching
+        L1["L1: 15nH"] --> MATCH1["Rede de Casamento"]
+        C9["C9: 1.8pF"] --> MATCH1
+        L2["L2: 5.6nH"] --> MATCH2["Rede de Casamento"]
+        C10["C10: 1.2pF"] --> MATCH2
+        
+        %% TCXO
+        Y1["Y1: TCXO 26MHz"] --> C11["C11: 12pF"]
+        C11 --> GND
+        Y1 --> C12["C12: 12pF"]
+        C12 --> GND
     end
 
-    %% ======= NFC + IR =======
-    subgraph NFC_IR
-        STM32 -->|I2C| PN532_I2C["I2C PN532"]
-        PN532_I2C --> PN532["PN532 NFC Controller"]
-        PN532 --> LOOP_ANT["NFC Loop Antenna"]
-        VCC_3V3 --> PN532
-        GND --> PN532
-
-        STM32 -->|GPIO| IR_TX["IR TX GPIO"]
-        IR_TX --> R_IR["33Ω Resistor"]
-        R_IR --> IR_EMITTER["TSAL6200 IR LED"]
-        IR_EMITTER --> GND
-
-        IR_RX["VS1838B IR Receiver"] -->|GPIO| STM32
-        IR_RX --> R_PULLUP["10kΩ Pull-up"]
-        R_PULLUP --> VCC_3V3
-        IR_RX --> C_IR["100nF Filter Cap"]
-        C_IR --> GND
-        VCC_3V3 --> IR_RX
+    %% ============= MÓDULO NFC/IR =============
+    subgraph NFC["📲 Módulo NFC/IR"]
+        PN532["U7: PN532"] --> ANT["Antena NFC"]
+        ANT --> L3["L3: 1.5μH"]
+        ANT --> C13["C13: 27pF"]
+        ANT --> C14["C14: 27pF"]
+        
+        %% Circuito IR
+        IR_TX["Q1: TSAL6200"] --> R3["R3: 33Ω"]
+        IR_RX["U8: VS1838B"] --> R4["R4: 10kΩ"]
+        IR_RX --> C15["C15: 100nF"]
     end
 
-    %% ======= SUB-1GHz Extra =======
-    subgraph Sub1GHz_CC1101
-        STM32 -->|SPI| CC1101["CC1101 Sub-1GHz Transceiver"]
-        CC1101 --> ANT_CC1101["433/868MHz Antenna"]
-        VCC_3V3 --> CC1101
-        GND --> CC1101
+    %% ============= MÓDULO DE CONTROLE =============
+    subgraph Control["🎛️ Módulo de Controle"]
+        STM32["U9: STM32H743"] --> OLED["U10: SSD1306"]
+        STM32 --> BTN1["S1: Botão tátil"]
+        STM32 --> BTN2["S2: Botão tátil"]
+        STM32 --> LED1["D3: LED Verde"]
+        LED1 --> R5["R5: 330Ω"]
+        
+        %% EEPROM
+        EEPROM["U11: 24LC256"] --> R6["R6: 4.7kΩ"]
+        EEPROM --> R7["R7: 4.7kΩ"]
     end
+
+    %% ============= CONEXÕES =============
+    VCC_3V3 --> SDR
+    VCC_3V3 --> NFC
+    VCC_3V3 --> Control
+    GND --> SDR
+    GND --> NFC
+    GND --> Control
+    
+    STM32 -->|SPI| RP2040
+    STM32 -->|I2C| PN532

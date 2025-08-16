@@ -1,60 +1,90 @@
 graph TD
-
-    %% -------------------- SDR  --------------------
-    subgraph SDR_Clone
-        VCC_3V3 --> MODEM["AT86RF215 Modem"]
-        VCC_3V3 --> MIXER["RFFC5072 Mixer"]
-        GND --> MODEM
-        GND --> MIXER
-
-        MODEM --> RF_SUB1G["RF Front-End Sub-1GHz"]
-        MIXER --> RF_6GHz["RF Front-End 30MHz-6GHz"]
-        RF_SUB1G --> SMA_SUB1G["SMA Connector Sub-1GHz"]
-        RF_6GHz --> SMA_6GHz["SMA Connector 30MHz-6GHz"]
-
-        TCXO["TCXO 26MHz"] --> MODEM
-        TCXO --> MIXER
-        VCC_3V3 --> TCXO
-        GND --> TCXO
-        EXT_CLK["External REF IN"] --> MIXER
-
-        PMOD["PMOD Header 12p"]
-        VCC_3V3 --> PMOD
-        GND --> PMOD
-
-        LED_STATUS["RF Activity LEDs"]
-        LED_STATUS -->|330Ω| GND
-
-        USER_SW["User Switch"]
-
-        GPIO_STM32["STM32 GPIO"]
+    %% ==================== POWER SUPPLY ====================
+    subgraph POWER["🔋 Power Supply"]
+        USB_IN["Micro USB 5V"] --> FUSE["F1: PTC Fuse 3A"]
+        FUSE --> TP5100["U1: TP5100 Charger"]
+        TP5100 --> BAT["BAT: 2x18650 3.7V"]
+        BAT --> MP1584["U2: MP1584EN-3.3V"]
+        MP1584 --> VCC_3V3["3.3V Rail"]
+        
+        TP5100 --> CHG_LED["D1: Blue LED (Charging)"]
+        TP5100 --> FULL_LED["D2: Green LED (Full)"]
+        CHG_LED --> R1["R1: 330Ω"]
+        FULL_LED --> R2["R2: 330Ω"]
+        
+        VCC_3V3 --> LDO_2V5["U3: AP2114K-2.5V"]
+        VCC_3V3 --> LDO_1V2["U4: LP5907MFX-1.2V"]
+        
+        %% Decoupling Caps
+        C1["C1: 10μF 25V"] --> TP5100
+        C2["C2: 100nF X7R"] --> TP5100
+        C3["C3: 22μF 6.3V"] --> MP1584
+        C4["C4: 100nF X7R"] --> MP1584
+        C5["C5: 10μF 6.3V"] --> LDO_2V5
+        C6["C6: 100nF X7R"] --> LDO_2V5
+        C7["C7: 1μF 6.3V"] --> LDO_1V2
+        C8["C8: 100nF X7R"] --> LDO_1V2
     end
 
-
-    %% -------------------- NFC & IR --------------------
-    subgraph NFC_IR
-        STM32 -->|I2C| PN532_I2C["I2C PN532"]
-        PN532_I2C --> PN532["Módulo NFC PN532"]
-        PN532 --> LOOP_ANT["NFC Ant Loop"]
-        VCC_3V3 --> PN532
-        GND --> PN532
-
-        STM32 -->|GPIO| IR_TX["GPIO IR TX"]
-        IR_TX --> R_IR["Resistor 33Ω"]
-        R_IR --> IR_EMITTER["TSAL6200 Emitter"]
-        IR_EMITTER --> GND
-
-        IR_RX["VS1838B IR RX"] -->|GPIO| STM32
-        IR_RX --> R_PULLUP["Pull-up 10kΩ"]
-        R_PULLUP --> VCC_3V3
-        IR_RX --> C_IR["Capacitor 100nF"]
-        C_IR --> GND
-        VCC_3V3 --> IR_RX
+    %% ==================== MCU CORE ====================
+    subgraph MCU_CORE["🖥️ MCU Core"]
+        STM32["U5: STM32H743VIT6"] -->|SPI1| RF_MODEM
+        STM32 -->|I2C1| NFC_CTRL
+        STM32 -->|USART1| RP2040
+        STM32 -->|GPIO| USER_BTNS["SW1-SW4: Tactile Buttons"]
+        STM32 -->|GPIO| STATUS_LED["D3: Green LED\nR3: 330Ω"]
+        
+        RP2040["U6: RP2040"] -->|SPI0| RF_MIXER
+        RP2040 -->|GPIO| RF_LEDS["D4-D5: RF Activity\nR4-R5: 330Ω"]
     end
 
-    %% -------------------- EEPROM --------------------
-    subgraph EEPROM_Block
-        EEPROM_CHIP["RPi-HAT EEPROM"] -->|I2C| STM32
-        VCC_3V3 --> EEPROM_CHIP
-        GND --> EEPROM_CHIP
+    %% ==================== RF SUBSYSTEM ====================
+    subgraph RF["📡 RF Subsystem"]
+        RF_MODEM["U7: AT86RF215"] -->|RF09_N/P| SUB1G_ANT["J1: SMA Sub-1GHz"]
+        RF_MODEM -->|RF24_N/P| BLE_ANT["J2: SMA 2.4GHz"]
+        
+        RF_MIXER["U8: RFFC5072"] -->|RF_IN| BANDPASS["FL1: SAW Bandpass"]
+        RF_MIXER -->|LO_IN| LPF["FL2: SAW Lowpass"]
+        RF_MIXER -->|IF_OUT| IF_FILTER["FL3: 5th Order LPF"]
+        BANDPASS --> SDR_ANT["J3: SMA 30MHz-6GHz"]
+        
+        %% Matching Networks
+        SUB1G_ANT --> L2["L2: 15nH"] --> C9["C9: 1.8pF"] --> GND
+        BLE_ANT --> L3["L3: 5.6nH"] --> C10["C10: 1.2pF"] --> GND
+        
+        %% Clocking
+        TCXO["Y1: 26MHz TCXO"] --> C11["C11: 12pF"] --> GND
+        TCXO --> C12["C12: 12pF"] --> GND
     end
+
+    %% ==================== NFC/IR SUBSYSTEM ====================
+    subgraph NFC_IR["📲 NFC/IR Subsystem"]
+        NFC_CTRL["U9: PN532"] --> NFC_ANT["L1: 1.5μH Antenna Loop"]
+        NFC_ANT --> C13["C13: 27pF"] --> C14["C14: 27pF"] --> GND
+        
+        IR_TX["Q1: TSAL6200"] --> R6["R6: 33Ω"] --> STM32
+        IR_RX["U10: VS1838B"] --> R7["R7: 10kΩ Pullup"]
+        IR_RX --> C15["C15: 100nF Decoupling"]
+    end
+
+    %% ==================== USER INTERFACE ====================
+    subgraph UI["🖥️ User Interface"]
+        OLED["U11: SSD1306 128x64"] -->|I2C| STM32
+        PMOD["J4: 12-pin PMOD"] -->|SPI/UART| RP2040
+        DEBUG["J5: SWD Header"] --> STM32
+    end
+
+    %% ==================== POWER DISTRIBUTION ====================
+    VCC_3V3 --> MCU_CORE
+    VCC_3V3 --> RF
+    VCC_3V3 --> NFC_IR
+    VCC_3V3 --> UI
+    
+    LDO_2V5 --> FPGA_VCCIO["2.5V Rail"]
+    LDO_1V2 --> FPGA_CORE["1.2V Rail"]
+    
+    GND --> POWER
+    GND --> MCU_CORE
+    GND --> RF
+    GND --> NFC_IR
+    GND --> UI

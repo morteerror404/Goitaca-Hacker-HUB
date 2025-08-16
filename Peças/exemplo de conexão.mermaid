@@ -1,5 +1,5 @@
 graph TD
-    %% ================ SEÇÃO DE ALIMENTAÇÃO ================
+    %% =================== ALIMENTAÇÃO ===================
     subgraph "ALIMENTAÇÃO (Específica por Módulo)"
         USB["Micro USB 5V (CP2102)"] --> TP4056["Carregador TP4056"]
         TP4056 --> Bateria["Bateria LiPo 3.7V"]
@@ -8,7 +8,7 @@ graph TD
         Bateria --> LDO_SDR["RT9193-3.3V (SDR)"]
     end
 
-    %% ================ MÓDULO CENTRAL ================
+    %% =================== RP2040 ===================
     subgraph "RP2040 (Controle Principal)"
         RP2040 -->|GPIO0| CS_CC1101
         RP2040 -->|GPIO1| CS_PN532
@@ -20,26 +20,26 @@ graph TD
         RP2040 -->|SPI0| SCK
     end
 
-    %% ================ CONEXÕES SPI ================
+    %% =================== CONEXÕES SPI ===================
     MOSI --> CC1101["CC1101 (GPIO18)"]
     MOSI --> PN532["PN532 (MOSI)"]
     MOSI --> AT86RF215["AT86RF215 (MOSI)"]
     MOSI --> LMS6002D["LMS6002D (SDI)"]
-    MOSI --> RFFC5072
+    MOSI --> RFFC5072["RFFC5072"]
 
-    MISO --> CC1101["CC1101 (GPIO16)"]
-    MISO --> PN532["PN532 (MISO)"]
-    MISO --> AT86RF215["AT86RF215 (MISO)"]
-    MISO --> LMS6002D["LMS6002D (SDO)"]
+    MISO --> CC1101
+    MISO --> PN532
+    MISO --> AT86RF215
+    MISO --> LMS6002D
     MISO --> RFFC5072
 
-    SCK --> CC1101["CC1101 (GPIO17)"]
-    SCK --> PN532["PN532 (SCK)"]
-    SCK --> AT86RF215["AT86RF215 (SCLK)"]
-    SCK --> LMS6002D["LMS6002D (SCK)"]
+    SCK --> CC1101
+    SCK --> PN532
+    SCK --> AT86RF215
+    SCK --> LMS6002D
     SCK --> RFFC5072
 
-    %% ================ CONEXÕES ESP32 ================
+    %% =================== ESP32-S3 ===================
     subgraph "ESP32-S3 (Comunicação)"
         ESP32 -->|GPIO4| IR_TX
         ESP32 -->|GPIO5| IR_RX
@@ -47,10 +47,28 @@ graph TD
         RP2040 -->|UART0_RX| ESP32
     end
 
-    %% ================ ANTENAS ================
+    %% =================== ANTENAS ===================
     CC1101 --> ANT_433["Antena λ/4 433MHz"]
     PN532 --> ANT_NFC["Antena PCB 13.56MHz"]
     AT86RF215 --> ANT_900["Antena SMA 900MHz"]
     AT86RF215 --> ANT_24["Antena SMA 2.4GHz"]
     LMS6002D --> ANT_SDR["Antena Wideband SMA"]
     RFFC5072 --> ANT_RFFC["Antena RF Mix (LO/RF/IF)"]
+
+    %% =================== GND / VDD ===================
+    AMS1117_3V3 --> RP2040
+    AMS1117_3V3 --> CC1101
+    AMS1117_3V3 --> PN532
+    LDO_RF --> AT86RF215
+    LDO_RF --> RFFC5072
+    LDO_SDR --> LMS6002D
+
+    %% Ground comum
+    GND((GND))
+    RP2040 --> GND
+    ESP32 --> GND
+    CC1101 --> GND
+    PN532 --> GND
+    AT86RF215 --> GND
+    LMS6002D --> GND
+    RFFC5072 --> GND
