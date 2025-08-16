@@ -1,6 +1,6 @@
 ![Goitacá](foto.png)
 
-### **GOITACÁ HACKER-HUB: O PESADELO DOS RADIOAMADORES**  
+### **GOITACÁ HACKER-HUB: O GUERREIRO DA SELVA DIGITAL**  
 *(Flipper Zero? Brinquedo de playboy. HackRF? Sucata superfaturada. Nós somos o cacique do espectro!)*  
 
 ---
