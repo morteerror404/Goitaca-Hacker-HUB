@@ -14,6 +14,7 @@ graph TD
         RP2040 -->|GPIO1| CS_PN532
         RP2040 -->|GPIO2| CS_AT86RF215
         RP2040 -->|GPIO3| CS_LMS6002D
+        RP2040 -->|GPIO6| CS_RFFC5072
         RP2040 -->|SPI0| MOSI
         RP2040 -->|SPI0| MISO
         RP2040 -->|SPI0| SCK
@@ -24,16 +25,19 @@ graph TD
     MOSI --> PN532["PN532 (MOSI)"]
     MOSI --> AT86RF215["AT86RF215 (MOSI)"]
     MOSI --> LMS6002D["LMS6002D (SDI)"]
+    MOSI --> RFFC5072
 
     MISO --> CC1101["CC1101 (GPIO16)"]
     MISO --> PN532["PN532 (MISO)"]
     MISO --> AT86RF215["AT86RF215 (MISO)"]
     MISO --> LMS6002D["LMS6002D (SDO)"]
+    MISO --> RFFC5072
 
     SCK --> CC1101["CC1101 (GPIO17)"]
     SCK --> PN532["PN532 (SCK)"]
     SCK --> AT86RF215["AT86RF215 (SCLK)"]
     SCK --> LMS6002D["LMS6002D (SCK)"]
+    SCK --> RFFC5072
 
     %% ================ CONEXÕES ESP32 ================
     subgraph "ESP32-S3 (Comunicação)"
@@ -43,22 +47,10 @@ graph TD
         RP2040 -->|UART0_RX| ESP32
     end
 
-    %% ================ MÓDULO SDR ================
-    subgraph "FPGA iCE40LP1K (Controle SDR)"
-        FPGA -->|SPI| AT86RF215
-        FPGA -->|GPIO8| RFFC5072["RFFC5072 (ENABLE)"]
-        FPGA -->|GPIO9| RFFC5072["RFFC5072 (SLEEP)"]
-    end
-
     %% ================ ANTENAS ================
     CC1101 --> ANT_433["Antena λ/4 433MHz"]
     PN532 --> ANT_NFC["Antena PCB 13.56MHz"]
     AT86RF215 --> ANT_900["Antena SMA 900MHz"]
     AT86RF215 --> ANT_24["Antena SMA 2.4GHz"]
     LMS6002D --> ANT_SDR["Antena Wideband SMA"]
-
-    %% ================ STYLES ================
-    style ALIMENTAÇÃO fill:#1a1a2e,stroke:#4a4a8a
-    style RP2040 fill:#003366,stroke:#0066cc
-    style ESP32 fill:#663300,stroke:#cc6600
-    style FPGA fill:#330066,stroke:#6600cc
+    RFFC5072 --> ANT_RFFC["Antena RF Mix (LO/RF/IF)"]

@@ -1,19 +1,20 @@
 graph TD
+    GND((GND))
     AT86RF215 -->|SPI| MCU
-    AT86RF215 --> TCXO["Y1: 26MHz (ECS-TXO-2520)"]
+    AT86RF215 --> TCXO["Y1: 26MHz"]
     TCXO --> C11["C11: 12pF"]
     TCXO --> C12["C12: 12pF"]
     C11 --> GND
     C12 --> GND
-    
+
     AT86RF215 --> RF09["RF09_N/RF09_P"]
     RF09 --> MATCH09["Matching Network"]
-    MATCH09 --> L2["L2: 15nH (Murata LQG15HN15NJ00)"]
-    MATCH09 --> C13["C13: 1.8pF (0402)"]
+    MATCH09 --> L2["L2: 15nH"]
+    MATCH09 --> C13["C13: 1.8pF"]
     C13 --> GND
-    
+
     AT86RF215 --> RF24["RF24_N/RF24_P"]
     RF24 --> MATCH24["Matching Network"]
-    MATCH24 --> L3["L3: 5.6nH (Murata LQG15HN5N6S00)"]
-    MATCH24 --> C14["C14: 1.2pF (0402)"]
+    MATCH24 --> L3["L3: 5.6nH"]
+    MATCH24 --> C14["C14: 1.2pF"]
     C14 --> GND

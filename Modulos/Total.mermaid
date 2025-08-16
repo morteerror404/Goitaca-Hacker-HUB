@@ -16,11 +16,6 @@ graph TD
         TP5100 --> LED_Y["LED Charged"]
         LED_B --> GND
         LED_Y --> GND
-
-        VCC_3V3 --> LDO_2V5["AP2114 2.5V"]
-        LDO_2V5 --> FPGA_VCCIO["FPGA VCCIO 2.5V"]
-        VCC_3V3 --> LDO_1V2["LP5907 1.2V"]
-        LDO_1V2 --> FPGA_VCCORE["FPGA VCCORE 1.2V"]
     end
 
     %% -------------------- Lógica Principal --------------------
@@ -55,15 +50,9 @@ graph TD
     end
 
     %% -------------------- RF - SDR --------------------
-    subgraph CaribouLite_SDR_Clone
-        FPGA["iCE40LP1K FPGA"]
-        VCC_3V3 --> FPGA
-        FPGA_VCCIO --> FPGA
-        FPGA_VCCORE --> FPGA
-        GND --> FPGA
-
-        FPGA -->|SPI| MODEM["AT86RF215 Modem"]
-        FPGA -->|CTRL| MIXER["RFFC5072 Mixer"]
+    subgraph SDR_Block
+        STM32 -->|SPI| MODEM["AT86RF215 Modem"]
+        STM32 -->|CTRL| MIXER["RFFC5072 Mixer"]
         MODEM --> RF_SUB1G["RF Front-End Sub-1GHz"]
         MIXER --> RF_6GHz["RF Front-End 30MHz-6GHz"]
         RF_SUB1G --> SMA_SUB1G["SMA Connector Sub-1GHz"]
@@ -74,25 +63,16 @@ graph TD
         GND --> MODEM
         GND --> MIXER
 
-        TCXO["TCXO 26MHz"] --> FPGA
-        TCXO --> MODEM
+        TCXO["TCXO 26MHz"] --> MODEM
         TCXO --> MIXER
         VCC_3V3 --> TCXO
         GND --> TCXO
         EXT_CLK["External REF IN"] --> MIXER
 
-        FPGA -->|8-bit I/O| PMOD["PMOD Header 12p"]
-        VCC_3V3 --> PMOD
-        GND --> PMOD
-
-        FPGA --> LED_STATUS["RF Activity LEDs"]
+        STM32 --> LED_STATUS["RF Activity LEDs"]
         LED_STATUS -->|330Ω| GND
 
-        USER_SW["User Switch"] --> FPGA
-
-        FPGA -->|FMC Data Bus 8-bit| GPIO_STM32["STM32 GPIO"]
-        FPGA -->|SPI| GPIO_STM32
-        FPGA -->|GPIO Reset| GPIO_STM32
+        USER_SW["User Switch"] --> STM32
     end
 
     %% -------------------- NFC / IR --------------------
