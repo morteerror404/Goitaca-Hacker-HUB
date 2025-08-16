@@ -28,13 +28,13 @@ graph TD
 
     %% ==================== MCU CORE ====================
     subgraph MCU_CORE["🖥️ MCU Core"]
-        STM32["U5: STM32H743VIT6"] -->|SPI1| RF_MODEM
+        STM32["U5: STM32H743VIT6 - ESP32"] -->|SPI1| RF_MODEM
         STM32 -->|I2C1| NFC_CTRL
         STM32 -->|USART1| RP2040
         STM32 -->|GPIO| USER_BTNS["SW1-SW4: Tactile Buttons"]
         STM32 -->|GPIO| STATUS_LED["D3: Green LED\nR3: 330Ω"]
         
-        RP2040["U6: RP2040"] -->|SPI0| RF_MIXER
+        RP2040["U6: RP2040 - RSP PICO"] -->|SPI0| RF_MIXER
         RP2040 -->|GPIO| RF_LEDS["D4-D5: RF Activity\nR4-R5: 330Ω"]
     end
 

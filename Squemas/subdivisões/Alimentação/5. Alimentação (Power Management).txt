@@ -1,0 +1,23 @@
+graph TD
+    A[Micro USB] -->|VCC| B[Fuse 3A (U4)]
+    B --> C[D1 (1N5819W SL)]
+    C -->|Catodo| D[V_SYS]
+    E[BAT (18650 Paralelo)] --> F[D2 (1N5819W SL)]
+    F -->|Catodo| D
+    D --> G[LDO (MCP1700-3.3)]
+    G --> H[3.3V_OUT]
+    H --> I[Jumper P2 (H-Fem-12)]
+    I --> J[Sistema (3.3V In)]
+    B --> K[Barramento 5V (P2 Pin 1)]
+    K --> L[Barramento 5V (P2 Pin 2)]
+    L --> M[GND]
+    D --> N[TP5100 (U12) VIN]
+    E --> O[TP5100 (U12) BAT]
+    N --> P[TP5100]
+    O --> P
+    P -->|CHRG#| Q[LED Azul (LED2) via R5 330Ω]
+    P -->|STDBY#| R[LED Verde (LED1) via R6 330Ω]
+    A -->|GND| M
+    H --> M
+    J --> M
+end
