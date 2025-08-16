@@ -1,15 +1,15 @@
 graph TD
-    subgraph CaribouLite_SDR_Clone
-        FPGA["iCE40LP1K FPGA"]
-        VCC_3V3 --> FPGA
-        FPGA_VCCIO --> FPGA
-        FPGA_VCCORE --> FPGA
-        GND --> FPGA
+    subgraph SDR_Clone_Simplificado
+        RP2040["RP2040 MCU (Controle Principal)"]
+        VCC_3V3 --> RP2040
+        GND --> RP2040
 
-        FPGA -->|SPI| MODEM["AT86RF215 Modem"]
-        FPGA -->|CTRL| MIXER["RFFC5072 Mixer"]
+        RP2040 -->|SPI| MODEM["AT86RF215 Modem"]
+        RP2040 -->|CTRL| MIXER["RFFC5072 Mixer"]
+
         MODEM --> RF_SUB1G["RF Front-End Sub-1GHz"]
         MIXER --> RF_6GHz["RF Front-End 30MHz-6GHz"]
+
         RF_SUB1G --> SMA_SUB1G["SMA Connector Sub-1GHz"]
         RF_6GHz --> SMA_6GHz["SMA Connector 30MHz-6GHz"]
 
@@ -18,23 +18,24 @@ graph TD
         GND --> MODEM
         GND --> MIXER
 
-        TCXO["TCXO 26MHz"] --> FPGA
+        TCXO["TCXO 26MHz"] --> RP2040
         TCXO --> MODEM
         TCXO --> MIXER
         VCC_3V3 --> TCXO
         GND --> TCXO
         EXT_CLK["External REF IN"] --> MIXER
 
-        FPGA -->|8-bit I/O| PMOD["PMOD Header 12p"]
+        RP2040 -->|GPIO| PMOD["PMOD Header 12p"]
         VCC_3V3 --> PMOD
         GND --> PMOD
 
-        FPGA --> LED_STATUS["RF Activity LEDs"]
+        RP2040 --> LED_STATUS["RF Activity LEDs"]
         LED_STATUS -->|330Ω| GND
 
-        USER_SW["User Switch"] --> FPGA
+        USER_SW["User Switch"] --> RP2040
 
-        FPGA -->|FMC Data Bus 8-bit| GPIO_STM32["STM32 GPIO"]
-        FPGA -->|SPI| GPIO_STM32
-        FPGA -->|GPIO Reset| GPIO_STM32
+        %% Integração com ESP32-S3
+        RP2040 -->|UART/SPI| ESP32["ESP32-S3 (Comunicação Wi-Fi/BT)"]
+        VCC_3V3 --> ESP32
+        GND --> ESP32
     end

@@ -1,0 +1,66 @@
+graph TD
+    %% ======= CORE SDR =======
+    subgraph SDR_Core
+        RP2040["RP2040 MCU (Controlador SDR)"]
+
+        RP2040 -->|SPI| AT86RF215["AT86RF215 Modem"]
+        RP2040 -->|CTRL| RFFC5072["RFFC5072 Mixer"]
+
+        AT86RF215 --> RF_SUB1G["RF Front-End Sub-1GHz"]
+        RFFC5072 --> RF_6GHz["RF Front-End 30MHz-6GHz"]
+
+        RF_SUB1G --> SMA_SUB1G["SMA Connector Sub-1GHz"]
+        RF_6GHz --> SMA_6GHz["SMA Connector 30MHz-6GHz"]
+
+        TCXO["TCXO 26MHz"] --> AT86RF215
+        TCXO --> RFFC5072
+        EXT_CLK["External REF IN"] --> RFFC5072
+
+        VCC_3V3 --> AT86RF215
+        VCC_3V3 --> RFFC5072
+        VCC_3V3 --> TCXO
+        GND --> AT86RF215
+        GND --> RFFC5072
+        GND --> TCXO
+    end
+
+    %% ======= MCU + COMUNICAÇÃO =======
+    subgraph Control_Unit
+        STM32["STM32F4/F7 (Hub Principal)"]
+        ESP32["ESP32-S3 (Wi-Fi/Bluetooth/USB)"]
+
+        RP2040 -->|SPI| STM32
+        STM32 -->|UART| ESP32
+        STM32 -->|GPIO Reset| RP2040
+        STM32 --> LED_STATUS["Status LEDs"]
+        USER_SW["User Switch"] --> STM32
+    end
+
+    %% ======= NFC + IR =======
+    subgraph NFC_IR
+        STM32 -->|I2C| PN532_I2C["I2C PN532"]
+        PN532_I2C --> PN532["PN532 NFC Controller"]
+        PN532 --> LOOP_ANT["NFC Loop Antenna"]
+        VCC_3V3 --> PN532
+        GND --> PN532
+
+        STM32 -->|GPIO| IR_TX["IR TX GPIO"]
+        IR_TX --> R_IR["33Ω Resistor"]
+        R_IR --> IR_EMITTER["TSAL6200 IR LED"]
+        IR_EMITTER --> GND
+
+        IR_RX["VS1838B IR Receiver"] -->|GPIO| STM32
+        IR_RX --> R_PULLUP["10kΩ Pull-up"]
+        R_PULLUP --> VCC_3V3
+        IR_RX --> C_IR["100nF Filter Cap"]
+        C_IR --> GND
+        VCC_3V3 --> IR_RX
+    end
+
+    %% ======= SUB-1GHz Extra =======
+    subgraph Sub1GHz_CC1101
+        STM32 -->|SPI| CC1101["CC1101 Sub-1GHz Transceiver"]
+        CC1101 --> ANT_CC1101["433/868MHz Antenna"]
+        VCC_3V3 --> CC1101
+        GND --> CC1101
+    end
