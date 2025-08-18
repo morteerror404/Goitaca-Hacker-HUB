@@ -113,7 +113,7 @@ flowchart TD
     RP2040 -->|I2C| PN532
     RP2040 -->|I2C| OLED
     RP2040 -->|GPIO| Buzzer
-    RP2040 -->|GPIO| Botões, LEDs
+    RP2040 -->|GPIO| Botões LEDs
 
     LMS6002D -->|LO| RFFC5072
     AT86RF215 --> SMA
