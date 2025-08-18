@@ -106,7 +106,7 @@ Construir um **sistema SDR compacto e eficiente**, com:
 
 ```mermaid
 flowchart TD
-    RP2040 -->|SPI/I2C/UART| ESP32-S3
+    RP2040 -->|SPI I2C UART| ESP32-S3
     RP2040 -->|SPI| LMS6002D
     RP2040 -->|SPI| AT86RF215
     RP2040 -->|SPI| CC1101
