@@ -78,7 +78,6 @@ Construir um **sistema SDR compacto e eficiente**, com:
 * **LMS6002D** → SDR de alta faixa (30 MHz – 3.8 GHz).
 * **AT86RF215** → Transceptor duplo (sub-GHz + 2.4 GHz).
 * **RFFC5072** → Conversor/mixer de frequência.
-* **CC1101** → Sub-GHz dedicado.
 * **PN532** → NFC (13.56 MHz).
 * **Circuito de alimentação** (bateria, TP4056, LDOs).
 
