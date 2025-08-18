@@ -56,12 +56,6 @@ O **GOITACÁ HACKER-HUB** é:
 
 *(Documentação completa e esquemáticos disponíveis pra quem tem coragem de fazer)*
 
-# Projeto SDR Modular com Raspberry Pi Pico e ESP32-S3
-
-Este projeto descreve um sistema **modular de rádio definido por software (SDR)** utilizando o **Raspberry Pi Pico (RP2040)** como unidade de controle principal e o **ESP32-S3** como co-processador de comunicação.
-
-O sistema integra múltiplos transceptores (LMS6002D, AT86RF215 e PN532), permitindo cobertura desde **NFC (13.56 MHz)** até **3.8 GHz**, com módulos periféricos de interface, armazenamento e expansão.
-
 ---
 
 ## 🎯 Objetivo
