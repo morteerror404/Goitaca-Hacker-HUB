@@ -1,3 +1,5 @@
+
+```mermaid
 graph TD
     %% =================== ALIMENTAÇÃO ===================
     subgraph "ALIMENTAÇÃO (Específica por Módulo)"
@@ -72,3 +74,4 @@ graph TD
     AT86RF215 --> GND
     LMS6002D --> GND
     RFFC5072 --> GND
+```

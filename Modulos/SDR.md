@@ -1,3 +1,4 @@
+```mermaid
 graph TD
     %% -------------------- SDR CLONE --------------------
     subgraph SDR_Clone
@@ -28,3 +29,4 @@ graph TD
 
         GPIO_STM32["STM32 GPIO"]
     end
+```
